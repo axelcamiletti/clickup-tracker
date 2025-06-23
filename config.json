@@ -1,0 +1,26 @@
+{
+  "appName": "ClickUp Tracker",
+  "version": "1.0.0",
+  "development": {
+    "openDevTools": true,
+    "watchFiles": true,
+    "hotReload": false
+  },
+  "clickup": {
+    "apiBaseUrl": "https://api.clickup.com/api/v2",
+    "timeouts": {
+      "connection": 10000,
+      "request": 5000
+    }
+  },
+  "ui": {
+    "defaultTheme": "light",
+    "enableNotifications": true,
+    "notificationDuration": 3000
+  },
+  "tracking": {
+    "autosaveInterval": 30000,
+    "tickInterval": 1000,
+    "maxSessionAge": 86400000
+  }
+}

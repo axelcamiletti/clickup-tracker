@@ -1,0 +1,17 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="256" height="256" rx="64" fill="#7B68EE"/>
+  
+  <!-- Clock circle -->
+  <circle cx="128" cy="128" r="80" fill="white" stroke="#7B68EE" stroke-width="4"/>
+  
+  <!-- Clock hands -->
+  <line x1="128" y1="128" x2="128" y2="80" stroke="#7B68EE" stroke-width="6" stroke-linecap="round"/>
+  <line x1="128" y1="128" x2="160" y2="128" stroke="#7B68EE" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Center dot -->
+  <circle cx="128" cy="128" r="8" fill="#7B68EE"/>
+  
+  <!-- ClickUp-style checkmark -->
+  <path d="M100 140L120 160L156 120" stroke="#6C5CE7" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

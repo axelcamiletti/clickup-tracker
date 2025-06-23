@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-clickup-primary hover:bg-clickup-secondary text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-clickup-primary focus:border-clickup-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100;
+  }
+
+  .tab-button {
+    @apply flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600;
+  }
+
+  .tab-button.active {
+    @apply bg-clickup-primary text-white hover:bg-clickup-secondary hover:text-white;
+  }
+
+  .task-card {
+    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow duration-200;
+  }
+
+  .task-card.tracking {
+    @apply border-green-500 bg-green-50 dark:bg-green-900 dark:bg-opacity-20;
+  }
+
+  .task-card.paused {
+    @apply border-yellow-500 bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20;
+  }
+
+  .tracking-button {
+    @apply rounded-md text-sm font-medium transition-all duration-200;
+  }
+
+  .tracking-button.start {
+    @apply bg-green-500 hover:bg-green-600 text-white;
+  }
+
+  .tracking-button.pause {
+    @apply bg-yellow-500 hover:bg-yellow-600 text-white;
+  }
+
+  .tracking-button.resume {
+    @apply bg-blue-500 hover:bg-blue-600 text-white;
+  }
+
+  .tracking-button.stop {
+    @apply bg-red-500 hover:bg-red-600 text-white;
+  }
+}

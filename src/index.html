@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClickUp Tracker</title>
+  <link rel="stylesheet" href="styles/output.css">
+  <link rel="icon" type="image/png" href="../assets/icon.png">
+</head>
+<body class="h-full overflow-hidden">
+  <div id="app" class="h-full flex flex-col">
+    
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div class="max-w-md w-full mx-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <!-- Logo/Icon -->
+          <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-clickup-primary rounded-lg flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">ClickUp Tracker</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Configura tu API key para comenzar</p>
+          </div>
+
+          <!-- Setup Form -->
+          <form id="setup-form" class="space-y-6">
+            <div>
+              <label for="api-key-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                API Key de ClickUp
+              </label>
+              <input 
+                type="password" 
+                id="api-key-input" 
+                placeholder="pk_xxxxxxxx_xxxxxxxxxxxxxxxxxxxxxxxx"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-clickup-primary focus:border-clickup-primary dark:bg-gray-700 dark:text-gray-100"
+                required>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Puedes encontrar tu API key en ClickUp → Settings → Apps → API
+              </p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="setup-error" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+              <div class="flex">
+                <svg class="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <p id="setup-error-text" class="text-sm text-red-700 dark:text-red-300"></p>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button 
+              type="submit" 
+              id="setup-submit-btn"
+              class="w-full bg-clickup-primary hover:bg-clickup-primary-dark text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center">
+              <span id="setup-submit-text">Conectar con ClickUp</span>
+              <div id="setup-loading" class="hidden ml-2">
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            </button>
+          </form>
+
+          <!-- Help Links -->
+          <div class="mt-6 text-center">
+            <a  href="https://help.clickup.com/hc/en-us/articles/6303422883095-Create-your-personal-API-token"  target="_blank" class="text-sm text-clickup-primary hover:text-clickup-primary-dark">
+              ¿Cómo obtener mi API key? →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main App (Initially Hidden) -->
+    <div id="main-app" class="h-full flex-col hidden">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 bg-clickup-primary rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+            </svg>
+          </div>
+          <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">ClickUp Tracker</h1>
+        </div>
+        <!-- Connection Status -->
+        <div class="flex items-center space-x-4">
+          <div>
+            <span id="user-name" class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden">Usuario</span>
+            <div id="connection-status" class="flex items-center space-x-2">
+              <div id="status-indicator" class="w-2 h-2 rounded-full bg-green-500"></div>
+              <span id="status-text" class="text-xs text-gray-600 dark:text-gray-400">Conectado</span>
+            </div>
+          </div>
+          
+          <!-- Disconnect Button -->
+          <button id="disconnect-btn"  class="flex items-center space-x-2 px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 border border-gray-300 dark:border-gray-600 rounded-md hover:border-red-300 dark:hover:border-red-500 transition-colors duration-200" title="Cambiar API Key">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
+          </button>
+        </div>
+      </div> 
+    </header>
+    
+    <!-- Main Content -->
+    <main class="flex-1 overflow-auto scrollbar-hide">
+      <div class="max-w-6xl mx-auto">
+        
+        <!-- Time Statistics -->
+        <div class="flex gap-4 p-5 bg-gray-800">
+          <!-- Today's Time -->
+          <div class="w-1/2 flex items-center justify-center gap-2 p-2 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <p class="text-xs text-gray-600 dark:text-gray-400 mr-auto">Hoy:</p>
+            <p id="today-time-header" class="text-lg font-semibold text-gray-900 dark:text-gray-100">00:00:00</p>
+          </div>            <!-- This Week -->
+          <div class="w-1/2 flex flex-col justify-center gap-1 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div class="flex items-center justify-between">
+              <p id="week-range" class="text-xs text-gray-600 dark:text-gray-400 mr-auto">Cargando fechas...</p>
+              <p id="week-time-header" class="text-lg font-semibold text-gray-900 dark:text-gray-100">00:00:00</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="p-5 bg-gray-800 border-b border-gray-500 dark:border-gray-700">
+            <nav class="flex space-x-1" aria-label="Tabs">
+                <button id="tab-search" class="tab-button active">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Buscar Tareas
+                </button>
+                <button id="tab-my-tasks" class="tab-button">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                    Mis Tareas
+                    <span id="my-tasks-count" class="ml-2 bg-clickup-primary text-white text-xs rounded-full px-2 py-0.5 hidden">0</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Content: Search Tasks -->
+        <div id="search-tasks-content" class="tab-content">
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Buscar Tareas en ClickUp</h2>
+                    <button id="refresh-all-tasks-btn" class="btn-secondary flex items-center gap">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Actualizar
+                    </button>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="mb-6">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="search-input" 
+                            placeholder="Buscar tareas por nombre, proyecto o descripción..."
+                            class="input-field pl-10"
+                        >
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div id="search-results" class="space-y-3">
+                    <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <p>Busca tareas para agregarlas a tu lista personal</p>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="search-loading" class="hidden text-center py-8">
+                    <div class="inline-flex items-center">
+                        <div class="w-6 h-6 border-2 border-clickup-primary border-t-transparent rounded-full animate-spin mr-3"></div>
+                        <span class="text-gray-600 dark:text-gray-400">Buscando tareas...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+          <!-- Tab Content: My Tasks -->
+        <div id="my-tasks-content" class="tab-content hidden">
+            <div class="space-y-4">
+                
+                <!-- My Tasks List -->
+                <div class="card p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Mis Tareas de Trabajo</h2>
+                        
+                        <!-- Sorting Dropdown -->
+                        <div class="flex items-center gap-2">
+                            <label for="sort-tasks-select" class="text-sm font-medium text-gray-700 dark:text-gray-300">Ordenar por:</label>                            <select id="sort-tasks-select" class="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-clickup-primary focus:border-clickup-primary">
+                                <option value="newest">Más recientes</option>
+                                <option value="oldest">Más antiguas</option>
+                                <option value="project">Proyecto</option>
+                                <option value="name">Nombre</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tasks List -->
+                    <div id="my-tasks-list" class="space-y-3">
+                        <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            <p class="mb-2">No tienes tareas en tu lista personal</p>
+                            <p class="text-sm">Ve a "Buscar Tareas" para agregar algunas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2">
+        <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <p>ClickUp Tracker v1.0.0</p>
+            <div class="flex space-x-4">
+                <button id="theme-toggle" class="hover:text-gray-700 dark:hover:text-gray-300">
+                    <svg id="theme-icon-dark" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-icon-light" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>    </footer>
+  </div>
+  </div>  <!-- JavaScript Modules -->
+  <script type="module" src="js/app.js"></script>
+  
+  <!-- Test Scripts -->
+  <script src="../test-tracking-fix.js"></script>
+  <script src="../test-sort-functionality.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+{
+  "name": "clickup-tracker",
+  "version": "1.0.0",
+  "description": "Time tracking application for ClickUp tasks",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "dev": "node dev-start.js",
+    "dev-simple": "concurrently \"npm run watch-css\" \"electron .\"",
+    "watch-css": "tailwindcss -i ./src/styles/input.css -o ./src/styles/output.css --watch",
+    "build-css": "tailwindcss -i ./src/styles/input.css -o ./src/styles/output.css --minify",
+    "build": "npm run build-css && electron-builder",
+    "pack": "electron-builder --dir",
+    "clean": "rimraf dist build out src/styles/output.css",
+    "test": "echo \"No tests configured yet\"",
+    "lint": "echo \"No linting configured yet\"",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "keywords": [
+    "electron",
+    "clickup",
+    "time-tracker",
+    "productivity"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron-forge/cli": "^7.8.1",
+    "@electron-forge/maker-deb": "^7.8.1",
+    "@electron-forge/maker-rpm": "^7.8.1",
+    "@electron-forge/maker-squirrel": "^7.8.1",
+    "@electron-forge/maker-zip": "^7.8.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+    "@electron-forge/plugin-fuses": "^7.8.1",
+    "@electron/fuses": "^1.8.0",
+    "@tailwindcss/forms": "^0.5.7",
+    "concurrently": "^8.2.2",
+    "electron": "^28.0.0",
+    "tailwindcss": "^3.4.0"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^8.1.0"
+  },
+  "build": {
+    "appId": "com.yourname.clickup-tracker",
+    "productName": "ClickUp Tracker",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*"
+    ],
+    "nsis": {
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "win": {
+      "target": "portable",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    }
+  }
+}
