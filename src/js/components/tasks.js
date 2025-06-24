@@ -10,10 +10,17 @@ export class TaskManager {    constructor(storage) {
         this.isInitialized = false;
     }    async init() {
         console.log('📋 Inicializando TaskManager...');
-        
+
         // Cargar mi lista personal de tareas
-        this.myTasks = await this.storage.get('myTasks', []);
-        
+        const storedTasks = await this.storage.get('myTasks', []);
+        if (storedTasks.length > 0) {
+            this.myTasks = storedTasks;
+            console.log(`✅ ${storedTasks.length} tareas cargadas desde localStorage.`);
+        } else {
+            console.warn('⚠️ No se encontraron tareas en localStorage.');
+            this.myTasks = [];
+        }
+
         // Cargar tarea seleccionada previamente
         const lastTaskId = await this.storage.get('lastSelectedTask');
         if (lastTaskId) {
@@ -22,7 +29,7 @@ export class TaskManager {    constructor(storage) {
                 this.selectedTask = task;
             }
         }
-        
+
         this.isInitialized = true;
     }
 
@@ -135,6 +142,7 @@ export class TaskManager {    constructor(storage) {
     // Datos de ejemplo si la API falla
     async getFallbackTasks() {
         console.log('📋 Usando datos de ejemplo...');
+        console.warn('⚠️ Las tareas de ejemplo solo se usarán como fallback y no se mezclarán con tareas reales');
         return [
             {
                 id: 'task_001',
@@ -195,13 +203,16 @@ export class TaskManager {    constructor(storage) {
         return this.allTasks.filter(task => 
             task.priority.priority.toLowerCase() === priority.toLowerCase()
         );
-    }    searchTasks(query) {
+    }    searchTasks(query, userId) {
         const searchTerm = query.toLowerCase();
         return this.allTasks.filter(task => 
-            task.name.toLowerCase().includes(searchTerm) ||
-            task.description.toLowerCase().includes(searchTerm) ||
-            task.list.name.toLowerCase().includes(searchTerm) ||
-            task.project.name.toLowerCase().includes(searchTerm)
+            (task.assignedTo && task.assignedTo.includes(userId)) && // Filtrar tareas asignadas al usuario
+            (
+                task.name.toLowerCase().includes(searchTerm) ||
+                task.description.toLowerCase().includes(searchTerm) ||
+                task.list.name.toLowerCase().includes(searchTerm) ||
+                task.project.name.toLowerCase().includes(searchTerm)
+            )
         );
     }    sortMyTasks(sortBy) {
         console.log('🔄 Ordenando mis tareas por:', sortBy);

@@ -144,11 +144,29 @@ export class StorageManager {
             const entryDate = new Date(entry.date);
             return entryDate >= cutoffDate;
         });
-    }
-
-    async getTimeStatistics() {
-        const history = await this.getTaskHistory(30);
+    }    async getTimeStatistics() {
+        // Verificar primero si hay estadísticas guardadas recientemente
+        const savedStats = await this.get('timeStatistics');
         const now = new Date();
+        
+        // Si hay estadísticas guardadas y son recientes (menos de 1 hora), usarlas
+        if (savedStats && savedStats.lastUpdated) {
+            const lastUpdate = new Date(savedStats.lastUpdated);
+            const hoursSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60);
+            
+            if (hoursSinceUpdate < 1) {
+                console.log('📊 Usando estadísticas guardadas (hace menos de 1 hora)');
+                return {
+                    today: savedStats.today || 0,
+                    week: savedStats.week || 0,
+                    total: savedStats.total || 0
+                };
+            }
+        }
+        
+        // Si no hay estadísticas guardadas o son antiguas, calcular desde el historial
+        console.log('📊 Calculando estadísticas desde el historial de tareas...');
+        const history = await this.getTaskHistory(30);
         
         // Tiempo de hoy
         const today = now.toISOString().split('T')[0];
@@ -172,6 +190,18 @@ export class StorageManager {
             week: weekTime,
             total: totalTime
         };
+    }
+
+    // Método específico para guardar estadísticas de tiempo (nuevo)
+    async saveTimeStatistics(todaySeconds, weekSeconds) {
+        const statsKey = 'timeStatistics';
+        const now = new Date();
+        
+        return await this.set(statsKey, {
+            today: todaySeconds,
+            week: weekSeconds,
+            lastUpdated: now.toISOString()
+        });
     }
 
     // Gestión de tareas favoritas

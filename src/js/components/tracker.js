@@ -318,6 +318,78 @@ export class TimeTracker {
         return `${startFormatted} - ${endFormatted}`;
     }// Estadísticas de productividad
     async getProductivityStats() {
+        try {
+            // Intentar obtener estadísticas actualizadas desde la API de ClickUp
+            const token = this.auth.getToken();
+            const userInfo = this.auth.getUserInfo();
+            
+            // Si tenemos token y userInfo, obtener directamente de la API
+            if (token && userInfo && userInfo.id) {
+                console.log(`🔍 Obteniendo estadísticas de tiempo para usuario ${userInfo.username} (${userInfo.id})...`);
+                
+                // Primero intentar obtener el teamId desde el storage
+                let teamId = await this.storage.get('clickup_team_id');
+                
+                // Si no hay teamId guardado, obtener equipos y usar el primero
+                if (!teamId) {
+                    console.log('⚠️ No hay teamId guardado, obteniendo equipos...');
+                    const teamsResponse = await fetch('https://api.clickup.com/api/v2/team', {
+                        headers: {
+                            'Authorization': token,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (teamsResponse.ok) {
+                        const teamsData = await teamsResponse.json();
+                        if (teamsData.teams && teamsData.teams.length > 0) {
+                            teamId = teamsData.teams[0].id;
+                            // Guardar para futuras consultas
+                            await this.storage.set('clickup_team_id', teamId);
+                            console.log(`✅ TeamId obtenido y guardado: ${teamId}`);
+                        }
+                    }
+                }
+                
+                // Si tenemos teamId, obtener estadísticas desde la API
+                if (teamId) {
+                    // Importar la función desde timeTracking.js
+                    const { getTimeStatisticsFromAPI } = await import('../api/timeTracking.js');
+                    
+                    // Obtener estadísticas directamente desde la API
+                    const apiStats = await getTimeStatisticsFromAPI(teamId, token, userInfo);
+                      try {
+                        // Guardar en el almacenamiento para respaldo
+                        await this.storage.saveTimeStatistics(apiStats.today, apiStats.week);
+                    } catch (storageError) {
+                        console.warn('⚠️ No se pudieron guardar las estadísticas:', storageError.message);
+                        // Continuar, aunque no se hayan podido guardar
+                    }
+                    
+                    // Retornar datos formateados
+                    return {
+                        today: this.formatSeconds(apiStats.today),
+                        week: this.formatSeconds(apiStats.week),
+                        weekRange: this.formatWeekRange(apiStats.startDate, apiStats.endDate),
+                        todaySeconds: apiStats.today,
+                        weekSeconds: apiStats.week
+                    };
+                }
+            }
+            
+            // Si no se puede obtener desde la API, usar las estadísticas locales
+            console.log('⚠️ Usando estadísticas locales...');
+            return await this.getLocalProductivityStats();
+        } catch (error) {
+            console.error('❌ Error obteniendo estadísticas desde API:', error);
+            // En caso de error, usar las estadísticas locales
+            console.log('⚠️ Usando estadísticas locales debido a error...');
+            return await this.getLocalProductivityStats();
+        }
+    }
+    
+    // Método para obtener estadísticas desde el almacenamiento local
+    async getLocalProductivityStats() {
         const stats = await this.storage.getTimeStatistics();
         
         // Calcular el rango de fechas de la semana actual
@@ -342,7 +414,8 @@ export class TimeTracker {
             weekRange: weekRange,
             todaySeconds: stats.today,
             weekSeconds: stats.week
-        };}    // Integración real con la API de ClickUp para time entries
+        };
+    }    // Integración real con la API de ClickUp para time entries
     async createTimeEntryInClickUp(taskId, duration, description = '') {
         console.log(`🔗 Creando time entry en ClickUp para tarea ${taskId}, duración: ${duration}s`);
         

@@ -5,9 +5,10 @@ const API_BASE_URL = 'https://api.clickup.com/api/v2';
  * Obtiene el tiempo tracked de la semana actual desde ClickUp
  * @param {string} teamId - ID del equipo
  * @param {string} token - Token de autenticación
+ * @param {string} userId - ID del usuario (opcional)
  * @returns {Promise<Object>} Datos del tiempo de la semana
  */
-export async function getWeekTimeTracking(teamId, token) {
+export async function getWeekTimeTracking(teamId, token, userId = null) {
     if (!token) throw new Error('Token no encontrado');
 
     // Calcular fechas de inicio y fin de la semana (lunes a domingo)
@@ -30,7 +31,16 @@ export async function getWeekTimeTracking(teamId, token) {
     try {
         console.log(`🔍 Obteniendo time entries de la semana - Team: ${teamId}, Start: ${startOfWeek.toISOString()}, End: ${endOfWeek.toISOString()}`);
         
-        const url = `${API_BASE_URL}/team/${teamId}/time_entries?start_date=${startTimestamp}&end_date=${endTimestamp}`;
+        let url = `${API_BASE_URL}/team/${teamId}/time_entries?start_date=${startTimestamp}&end_date=${endTimestamp}`;
+        
+        // Si se proporciona un userId, agregar el parámetro para filtrar por usuario
+        // Esto asegura que obtengamos TODAS las entradas de tiempo del usuario,
+        // incluso de tareas que ya no estén asignadas a él
+        if (userId) {
+            url += `&user_id=${userId}`;
+            console.log(`👤 Filtrando por usuario específico: ${userId}`);
+        }
+        
         console.log(`📡 URL de la API: ${url}`);
         
         const response = await fetch(url, {
@@ -74,9 +84,10 @@ export async function getWeekTimeTracking(teamId, token) {
  * Obtiene el tiempo tracked del día actual
  * @param {string} teamId - ID del equipo
  * @param {string} token - Token de autenticación
+ * @param {string} userId - ID del usuario (opcional)
  * @returns {Promise<Object>} Datos del tiempo del día
  */
-export async function getTodayTimeTracking(teamId, token) {
+export async function getTodayTimeTracking(teamId, token, userId = null) {
     if (!token) throw new Error('Token no encontrado');
 
     // Calcular inicio y fin del día actual
@@ -93,7 +104,16 @@ export async function getTodayTimeTracking(teamId, token) {
     try {
         console.log(`🔍 Obteniendo time entries de hoy - Team: ${teamId}, Start: ${startOfDay.toISOString()}, End: ${endOfDay.toISOString()}`);
         
-        const url = `${API_BASE_URL}/team/${teamId}/time_entries?start_date=${startTimestamp}&end_date=${endTimestamp}`;
+        let url = `${API_BASE_URL}/team/${teamId}/time_entries?start_date=${startTimestamp}&end_date=${endTimestamp}`;
+        
+        // Si se proporciona un userId, agregar el parámetro para filtrar por usuario
+        // Esto asegura que obtengamos TODAS las entradas de tiempo del usuario,
+        // incluso de tareas que ya no estén asignadas a él
+        if (userId) {
+            url += `&user_id=${userId}`;
+            console.log(`👤 Filtrando por usuario específico: ${userId}`);
+        }
+        
         console.log(`📡 URL de la API: ${url}`);
         
         const response = await fetch(url, {
@@ -160,4 +180,44 @@ export function formatWeekRange(startDate, endDate) {
     const endFormatted = endDate.toLocaleDateString('es-ES', options);
     
     return `${startFormatted} - ${endFormatted}`;
+}
+
+/**
+ * Obtiene las estadísticas de tiempo directamente desde la API de ClickUp
+ * @param {string} teamId - ID del equipo
+ * @param {string} token - Token de autenticación
+ * @param {Object} userInfo - Información del usuario
+ * @returns {Promise<Object>} Estadísticas de tiempo
+ */
+export async function getTimeStatisticsFromAPI(teamId, token, userInfo) {
+    if (!token) throw new Error('Token no encontrado');
+    if (!userInfo || !userInfo.id) throw new Error('Información de usuario requerida');
+
+    try {
+        console.log(`📊 Obteniendo estadísticas de tiempo para usuario ${userInfo.id}...`);
+        
+        // Obtener datos de hoy y de la semana con el ID del usuario
+        const todayData = await getTodayTimeTracking(teamId, token, userInfo.id);
+        const weekData = await getWeekTimeTracking(teamId, token, userInfo.id);
+        
+        // Convertir de milisegundos a segundos
+        const todaySeconds = Math.floor(todayData.totalTime / 1000);
+        const weekSeconds = Math.floor(weekData.totalTime / 1000);
+        
+        console.log(`⏱️ Estadísticas obtenidas - Hoy: ${formatTime(todayData.totalTime)}, Semana: ${formatTime(weekData.totalTime)}`);
+        
+        return {
+            today: todaySeconds,
+            week: weekSeconds,
+            todayFormatted: formatTime(todayData.totalTime),
+            weekFormatted: formatTime(weekData.totalTime),
+            startDate: weekData.startDate,
+            endDate: weekData.endDate,
+            todayEntries: todayData.entries,
+            weekEntries: weekData.entries
+        };
+    } catch (error) {
+        console.error('❌ Error obteniendo estadísticas de tiempo:', error);
+        throw error;
+    }
 }
