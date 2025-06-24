@@ -379,4 +379,11 @@ export class AuthManager {
             ]
         };
     }
+
+    getCurrentUserId() {
+        if (this.userInfo && this.userInfo.id) {
+            return this.userInfo.id;
+        }
+        throw new Error('Usuario no autenticado o información de usuario no disponible');
+    }
 }

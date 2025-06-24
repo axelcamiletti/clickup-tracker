@@ -203,18 +203,26 @@ export class TaskManager {    constructor(storage) {
         return this.allTasks.filter(task => 
             task.priority.priority.toLowerCase() === priority.toLowerCase()
         );
-    }    searchTasks(query, userId) {
+    }    searchTasks(query) {
+        console.log(`🔍 Buscando: "${query || ''}"`);
+        
+        // Si no hay término de búsqueda, devolver todas las tareas
+        if (!query || query.trim() === '') {
+            console.log('📋 Devolviendo todas las tareas, búsqueda vacía');
+            return this.allTasks;
+        }
+        
         const searchTerm = query.toLowerCase();
-        return this.allTasks.filter(task => 
-            (task.assignedTo && task.assignedTo.includes(userId)) && // Filtrar tareas asignadas al usuario
-            (
-                task.name.toLowerCase().includes(searchTerm) ||
-                task.description.toLowerCase().includes(searchTerm) ||
-                task.list.name.toLowerCase().includes(searchTerm) ||
-                task.project.name.toLowerCase().includes(searchTerm)
-            )
+        const results = this.allTasks.filter(task => 
+            task.name.toLowerCase().includes(searchTerm) ||
+            (task.description && task.description.toLowerCase().includes(searchTerm)) ||
+            task.list.name.toLowerCase().includes(searchTerm) ||
+            task.project.name.toLowerCase().includes(searchTerm)
         );
-    }    sortMyTasks(sortBy) {
+        
+        console.log(`🔍 Encontradas ${results.length} tareas que coinciden con: "${query}"`);
+        return results;
+    }sortMyTasks(sortBy) {
         console.log('🔄 Ordenando mis tareas por:', sortBy);
         
         switch (sortBy) {
@@ -414,22 +422,10 @@ export class TaskManager {    constructor(storage) {
         this.emit('myTasksUpdated', this.myTasks);
         
         return myTaskIndex !== -1;
-    }
-
-    // Búsqueda en todas las tareas
+    }    // Búsqueda en todas las tareas
     searchAllTasks(query) {
-        if (!query || query.trim() === '') {
-            return this.allTasks;
-        }
-        
-        const searchTerm = query.toLowerCase();
-        return this.allTasks.filter(task => 
-            task.name.toLowerCase().includes(searchTerm) ||
-            task.description.toLowerCase().includes(searchTerm) ||
-            task.list.name.toLowerCase().includes(searchTerm) ||
-            task.project.name.toLowerCase().includes(searchTerm)
-        );
-    }    // Limpiar datos
+        return this.searchTasks(query);
+    }// Limpiar datos
     clear() {
         this.allTasks = [];
         this.myTasks = [];

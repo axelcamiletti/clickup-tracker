@@ -166,12 +166,11 @@ class ClickUpTrackerApp {
             console.error('❌ Error en desconexión:', error);
             this.ui.showError('Error al desconectar: ' + error.message);
         }
-    }
-
-    handleTasksLoaded(tasks) {
+    }    handleTasksLoaded(tasks) {
         console.log('📋 Tareas cargadas:', tasks.length);
+        // Mostrar las tareas en la pestaña de búsqueda automáticamente
         this.ui.showSearchResults(tasks);
-    }    handleMyTasksUpdated(tasks) {
+    }handleMyTasksUpdated(tasks) {
         console.log('📋 Mis tareas actualizadas:', tasks.length);
         
         // Solo re-renderizar si estamos en la pestaña de mis tareas
@@ -265,8 +264,7 @@ class ClickUpTrackerApp {
             console.log(`🔄 Estado sincronizado para tarea ${currentTaskId}: running, ${currentDuration}s`);
         }
     }
-    
-    async handleSearchRequest(query) {
+      async handleSearchRequest(query) {
         console.log('🔍 Búsqueda solicitada:', query);
         try {
             this.ui.showSearchLoading(true);
